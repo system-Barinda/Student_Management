@@ -6,13 +6,17 @@ import java.sql.SQLException;
 
 public class Database {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "root"; 
-    private static final String PASS = ""; 
+    // Your real MySQL database
+    private static final String URL = 
+        "jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=UTC";
+
+    private static final String USER = "root";     // change if your user is different
+    private static final String PASS = "";         // put your MySQL password here
 
     static {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // MySQL driver
+            // Load MySQL driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

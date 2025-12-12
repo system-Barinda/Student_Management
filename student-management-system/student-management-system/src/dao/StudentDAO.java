@@ -2,33 +2,22 @@ package dao;
 
 import model.Student;
 import db.Database;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StudentDAO {
 
+    // REMOVE table creation — you already have table "students" in MySQL
     public void createTableIfNotExists() {
-        String sql = "CREATE TABLE IF NOT EXISTS students (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "first_name TEXT NOT NULL," +
-                "last_name TEXT NOT NULL," +
-                "email TEXT UNIQUE NOT NULL," +
-                "age INTEGER NOT NULL" +
-                ")";
-        try (Connection c = Database.getConnection();
-             Statement s = c.createStatement()) {
-            s.execute(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Empty on purpose or delete this method completely
     }
 
     public void insert(Student st) throws SQLException {
         String sql = "INSERT INTO students(first_name,last_name,email,age) VALUES(?,?,?,?)";
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
+
             ps.setString(1, st.getFirstName());
             ps.setString(2, st.getLastName());
             ps.setString(3, st.getEmail());
@@ -38,11 +27,13 @@ public class StudentDAO {
     }
 
     public List<Student> findAll() throws SQLException {
-        String sql = "SELECT id,first_name,last_name,email,age FROM students";
+        String sql = "SELECT id, first_name, last_name, email, age FROM students";
         List<Student> list = new ArrayList<>();
+
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 list.add(new Student(
                         rs.getInt("id"),
@@ -60,6 +51,7 @@ public class StudentDAO {
         String sql = "UPDATE students SET first_name=?, last_name=?, email=?, age=? WHERE id=?";
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
+
             ps.setString(1, st.getFirstName());
             ps.setString(2, st.getLastName());
             ps.setString(3, st.getEmail());
@@ -73,6 +65,7 @@ public class StudentDAO {
         String sql = "DELETE FROM students WHERE id=?";
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
+
             ps.setInt(1, id);
             ps.executeUpdate();
         }
