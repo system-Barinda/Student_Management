@@ -10,11 +10,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class MainUI extends JFrame {
+
     private final StudentService service = new StudentService();
 
-    private final JTextField txtFirst = new JTextField(15);
-    private final JTextField txtLast = new JTextField(15);
-    private final JTextField txtEmail = new JTextField(20);
+    private final JTextField txtFirst = new JTextField(12);
+    private final JTextField txtLast = new JTextField(12);
+    private final JTextField txtEmail = new JTextField(18);
     private final JTextField txtAge = new JTextField(4);
 
     private final JButton btnAdd = new JButton("Add");
@@ -24,42 +25,76 @@ public class MainUI extends JFrame {
     private final JButton btnClear = new JButton("Clear");
 
     private final DefaultTableModel tableModel = new DefaultTableModel(
-            new Object[]{"ID","First Name","Last Name","Email","Age"}, 0
+            new Object[]{"ID", "First Name", "Last Name", "Email", "Age"}, 0
     );
+
     private final JTable table = new JTable(tableModel);
 
     public MainUI() {
         super("Student Management (Swing + JDBC)");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 500);
+        setSize(900, 500);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Top form
-        JPanel form = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        form.add(new JLabel("First:")); form.add(txtFirst);
-        form.add(new JLabel("Last:")); form.add(txtLast);
-        form.add(new JLabel("Email:")); form.add(txtEmail);
-        form.add(new JLabel("Age:")); form.add(txtAge);
+        setLayout(new BorderLayout(10, 10));
 
-        // Buttons panel
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // === HEADER ===
+        JLabel header = new JLabel("Student Management System", SwingConstants.CENTER);
+        header.setFont(new Font("Arial", Font.BOLD, 20));
+        header.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(header, BorderLayout.NORTH);
+
+        // === FORM PANEL ===
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(new JLabel("First Name:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(txtFirst, gbc);
+
+        gbc.gridx = 2; gbc.gridy = 0;
+        formPanel.add(new JLabel("Last Name:"), gbc);
+        gbc.gridx = 3;
+        formPanel.add(txtLast, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        formPanel.add(new JLabel("Email:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(txtEmail, gbc);
+
+        gbc.gridx = 2; gbc.gridy = 1;
+        formPanel.add(new JLabel("Age:"), gbc);
+        gbc.gridx = 3;
+        formPanel.add(txtAge, gbc);
+
+        add(formPanel, BorderLayout.CENTER);
+
+        // === BUTTON PANEL ===
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         buttons.add(btnAdd);
         buttons.add(btnLoad);
         buttons.add(btnUpdate);
         buttons.add(btnDelete);
         buttons.add(btnClear);
 
-        // Table inside scroll
+        add(buttons, BorderLayout.SOUTH);
+
+        // === TABLE ===
+        table.setRowHeight(25);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
+
         JScrollPane scroll = new JScrollPane(table);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        scroll.setPreferredSize(new Dimension(900, 250));
 
-        Container cp = getContentPane();
-        cp.setLayout(new BorderLayout());
-        cp.add(form, BorderLayout.NORTH);
-        cp.add(buttons, BorderLayout.CENTER);
-        cp.add(scroll, BorderLayout.SOUTH);
+        add(scroll, BorderLayout.SOUTH);
 
-        // Wire events
+        // === Event handlers ===
         btnAdd.addActionListener(e -> onAdd());
         btnLoad.addActionListener(e -> loadData());
         btnUpdate.addActionListener(e -> onUpdate());
@@ -69,10 +104,10 @@ public class MainUI extends JFrame {
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
                 int row = table.getSelectedRow();
-                txtFirst.setText(String.valueOf(table.getValueAt(row,1)));
-                txtLast.setText(String.valueOf(table.getValueAt(row,2)));
-                txtEmail.setText(String.valueOf(table.getValueAt(row,3)));
-                txtAge.setText(String.valueOf(table.getValueAt(row,4)));
+                txtFirst.setText(table.getValueAt(row, 1).toString());
+                txtLast.setText(table.getValueAt(row, 2).toString());
+                txtEmail.setText(table.getValueAt(row, 3).toString());
+                txtAge.setText(table.getValueAt(row, 4).toString());
             }
         });
 
@@ -81,15 +116,63 @@ public class MainUI extends JFrame {
 
     private void onAdd() {
         try {
-            service.addStudent(txtFirst.getText(), txtLast.getText(), txtEmail.getText(), txtAge.getText());
-            JOptionPane.showMessageDialog(this, "Added successfully.");
+            service.addStudent(
+                    txtFirst.getText(),
+                    txtLast.getText(),
+                    txtEmail.getText(),
+                    txtAge.getText()
+            );
+
+            JOptionPane.showMessageDialog(this, "Student added successfully!");
             loadData();
             clearForm();
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Validation", JOptionPane.WARNING_MESSAGE);
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "DB Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onUpdate() {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Select a student to update.");
+            return;
+        }
+
+        try {
+            Integer id = Integer.parseInt(table.getValueAt(row, 0).toString());
+            service.updateStudent(id,
+                    txtFirst.getText(),
+                    txtLast.getText(),
+                    txtEmail.getText(),
+                    txtAge.getText()
+            );
+
+            JOptionPane.showMessageDialog(this, "Student updated successfully!");
+            loadData();
+            clearForm();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onDelete() {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Select a student to delete.");
+            return;
+        }
+
+        try {
+            int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+            service.deleteStudent(id);
+            JOptionPane.showMessageDialog(this, "Student deleted successfully!");
+            loadData();
+            clearForm();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -97,52 +180,15 @@ public class MainUI extends JFrame {
         try {
             List<Student> list = service.listAll();
             tableModel.setRowCount(0);
+
             for (Student s : list) {
-                tableModel.addRow(new Object[]{s.getId(), s.getFirstName(), s.getLastName(), s.getEmail(), s.getAge()});
+                tableModel.addRow(new Object[]{
+                        s.getId(), s.getFirstName(), s.getLastName(), s.getEmail(), s.getAge()
+                });
             }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "DB Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
 
-    private void onUpdate() {
-        int row = table.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Select a record to update.");
-            return;
-        }
-        Integer id = (Integer) table.getValueAt(row, 0);
-        try {
-            service.updateStudent(id, txtFirst.getText(), txtLast.getText(), txtEmail.getText(), txtAge.getText());
-            JOptionPane.showMessageDialog(this, "Updated successfully.");
-            loadData();
-            clearForm();
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Validation", JOptionPane.WARNING_MESSAGE);
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "DB Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
-
-    private void onDelete() {
-        int row = table.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Select a record to delete.");
-            return;
-        }
-        int id = (Integer) table.getValueAt(row, 0);
-        int confirm = JOptionPane.showConfirmDialog(this, "Delete selected student?", "Confirm", JOptionPane.YES_NO_OPTION);
-        if (confirm != JOptionPane.YES_OPTION) return;
-        try {
-            service.deleteStudent(id);
-            JOptionPane.showMessageDialog(this, "Deleted successfully.");
-            loadData();
-            clearForm();
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "DB Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "DB Error: " + ex.getMessage());
         }
     }
 
@@ -155,8 +201,6 @@ public class MainUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new MainUI().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new MainUI().setVisible(true));
     }
 }
