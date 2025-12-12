@@ -216,7 +216,7 @@ public class MainUI extends JFrame {
     }
 
     // =========================
-    // CLEAR FORM
+    // CLEAR FORM we just gonna use
     // =========================
     private void clearForm() {
         txtFirst.setText("");
