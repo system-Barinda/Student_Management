@@ -32,23 +32,24 @@ public class MainUI extends JFrame {
 
     public MainUI() {
         super("Student Management (Swing + JDBC)");
-        setSize(900, 500);
+        setSize(900, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         setLayout(new BorderLayout(10, 10));
 
-        // === HEADER ===
+        // =========================
+        // HEADER
+        // =========================
         JLabel header = new JLabel("Student Management System", SwingConstants.CENTER);
-        header.setFont(new Font("Arial", Font.BOLD, 20));
+        header.setFont(new Font("Arial", Font.BOLD, 22));
         header.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        add(header, BorderLayout.NORTH);
 
-        // === FORM PANEL ===
+        // =========================
+        // FORM PANEL (TOP)
+        // =========================
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         GridBagConstraints gbc = new GridBagConstraints();
-
         gbc.insets = new Insets(6, 6, 6, 6);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
@@ -57,7 +58,7 @@ public class MainUI extends JFrame {
         gbc.gridx = 1;
         formPanel.add(txtFirst, gbc);
 
-        gbc.gridx = 2; gbc.gridy = 0;
+        gbc.gridx = 2;
         formPanel.add(new JLabel("Last Name:"), gbc);
         gbc.gridx = 3;
         formPanel.add(txtLast, gbc);
@@ -67,15 +68,32 @@ public class MainUI extends JFrame {
         gbc.gridx = 1;
         formPanel.add(txtEmail, gbc);
 
-        gbc.gridx = 2; gbc.gridy = 1;
+        gbc.gridx = 2;
         formPanel.add(new JLabel("Age:"), gbc);
         gbc.gridx = 3;
         formPanel.add(txtAge, gbc);
 
-        add(formPanel, BorderLayout.CENTER);
+        // Wrap header + form into one top panel
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(header, BorderLayout.NORTH);
+        topPanel.add(formPanel, BorderLayout.CENTER);
 
-        // === BUTTON PANEL ===
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        add(topPanel, BorderLayout.NORTH);
+
+        // =========================
+        // TABLE (CENTER)
+        // =========================
+        table.setRowHeight(25);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
+
+        JScrollPane scroll = new JScrollPane(table);
+        add(scroll, BorderLayout.CENTER);
+
+        // =========================
+        // BUTTONS (BOTTOM)
+        // =========================
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         buttons.add(btnAdd);
         buttons.add(btnLoad);
         buttons.add(btnUpdate);
@@ -84,17 +102,9 @@ public class MainUI extends JFrame {
 
         add(buttons, BorderLayout.SOUTH);
 
-        // === TABLE ===
-        table.setRowHeight(25);
-        table.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
-
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setPreferredSize(new Dimension(900, 250));
-
-        add(scroll, BorderLayout.SOUTH);
-
-        // === Event handlers ===
+        // =========================
+        // BUTTON ACTIONS
+        // =========================
         btnAdd.addActionListener(e -> onAdd());
         btnLoad.addActionListener(e -> loadData());
         btnUpdate.addActionListener(e -> onUpdate());
@@ -114,6 +124,9 @@ public class MainUI extends JFrame {
         loadData();
     }
 
+    // =========================
+    // ADD STUDENT
+    // =========================
     private void onAdd() {
         try {
             service.addStudent(
@@ -132,6 +145,9 @@ public class MainUI extends JFrame {
         }
     }
 
+    // =========================
+    // UPDATE STUDENT
+    // =========================
     private void onUpdate() {
         int row = table.getSelectedRow();
         if (row == -1) {
@@ -157,6 +173,9 @@ public class MainUI extends JFrame {
         }
     }
 
+    // =========================
+    // DELETE STUDENT
+    // =========================
     private void onDelete() {
         int row = table.getSelectedRow();
         if (row == -1) {
@@ -167,6 +186,7 @@ public class MainUI extends JFrame {
         try {
             int id = Integer.parseInt(table.getValueAt(row, 0).toString());
             service.deleteStudent(id);
+
             JOptionPane.showMessageDialog(this, "Student deleted successfully!");
             loadData();
             clearForm();
@@ -176,6 +196,9 @@ public class MainUI extends JFrame {
         }
     }
 
+    // =========================
+    // LOAD TABLE
+    // =========================
     private void loadData() {
         try {
             List<Student> list = service.listAll();
@@ -192,6 +215,9 @@ public class MainUI extends JFrame {
         }
     }
 
+    // =========================
+    // CLEAR FORM
+    // =========================
     private void clearForm() {
         txtFirst.setText("");
         txtLast.setText("");
@@ -200,6 +226,9 @@ public class MainUI extends JFrame {
         table.clearSelection();
     }
 
+    // =========================
+    // MAIN
+    // =========================
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new MainUI().setVisible(true));
     }
